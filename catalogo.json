@@ -1,0 +1,194 @@
+{
+  "settings": {
+    "storeName": "El Alambique",
+    "storeSlogan": "Destilados selectos, vinos de autor y licores del mundo",
+    "currency": "Bs.",
+    "budgetMax": 140,
+    "premiumMin": 250,
+    "whatsappNumber": "59170000000",
+    "whatsappPaymentNote": "Solicito los datos de pago (QR / transferencia) para cancelar mi pedido y coordinar la entrega.",
+    "adminPin": "kevin1234"
+  },
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "Singani Casa Real Etiqueta Negra",
+      "category": "Singani",
+      "abv": 40,
+      "price": 135,
+      "volume": "750 ml",
+      "description": "Destilado de uva Moscatel de Alejandría en los valles de Tarija. Aromático, cristalino e ideal para Chuflay.",
+      "image": "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-2",
+      "name": "Whisky Johnnie Walker Black Label 12 Años",
+      "category": "Whisky",
+      "abv": 40,
+      "price": 310,
+      "volume": "750 ml",
+      "description": "Blended Scotch Whisky icónico con notas profundas de vainilla dulce, piel de naranja y un final ahumado.",
+      "image": "https://images.unsplash.com/photo-1527281400683-1aae777175f8?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-3",
+      "name": "Vino Tinto Malbec Reserva",
+      "category": "Vino y Espumante",
+      "abv": 13.5,
+      "price": 115,
+      "volume": "750 ml",
+      "description": "Crianza de 12 meses en barrica de roble francés. Notas a ciruelas maduras, frutos rojos y sutil toque de cacao.",
+      "image": "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-4",
+      "name": "Gin Tanqueray London Dry",
+      "category": "Gin",
+      "abv": 43.1,
+      "price": 245,
+      "volume": "750 ml",
+      "description": "Destilado cuatro veces con botánicos seleccionados: enebro, cilantro, raíz de angélica y regaliz.",
+      "image": "https://images.unsplash.com/photo-1614313511387-1436a4480ebb?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-5",
+      "name": "Cerveza Artesanal IPA (Pack x6)",
+      "category": "Cerveza",
+      "abv": 6.2,
+      "price": 78,
+      "volume": "6 x 330 ml",
+      "description": "India Pale Ale lupulada con intensos aromas cítricos, maracuyá y un amargor equilibrado y refrescante.",
+      "image": "https://images.unsplash.com/photo-1535958636474-b021ee887b13?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-6",
+      "name": "Licor de Hierbas Jägermeister",
+      "category": "Licor y Aperitivo",
+      "abv": 35,
+      "price": 195,
+      "volume": "700 ml",
+      "description": "Elaborado con 56 hierbas, frutas, raíces y especias maceradas. Se recomienda servir bien frío a -18°C.",
+      "image": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-7",
+      "name": "Crema Irlandesa Baileys Original",
+      "category": "Licor y Aperitivo",
+      "abv": 17,
+      "price": 185,
+      "volume": "750 ml",
+      "description": "Deliciosa fusión de crema de leche irlandesa fresca, whisky irlandés añejo y finas notas de cacao y vainilla.",
+      "image": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-8",
+      "name": "Ron Havana Club Añejo 7 Años",
+      "category": "Ron",
+      "abv": 40,
+      "price": 210,
+      "volume": "750 ml",
+      "description": "El epítome del ron añejo cubano. Sabores ricos a cacao, vainilla, cedro, tabaco dulce y frutas tropicales.",
+      "image": "https://images.unsplash.com/photo-1598155523122-38423bb4d6c1?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-9",
+      "name": "Tequila José Cuervo Especial Reposado",
+      "category": "Tequila",
+      "abv": 38,
+      "price": 175,
+      "volume": "750 ml",
+      "description": "Tequila joven reposado en barricas de roble blanco con notas suaves de agave cocido, roble y vainilla.",
+      "image": "https://images.unsplash.com/photo-1516535794938-6063878f08cc?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-10",
+      "name": "Aperol Aperitivo Italiano",
+      "category": "Licor y Aperitivo",
+      "abv": 11,
+      "price": 130,
+      "volume": "750 ml",
+      "description": "Aperitivo ligero de color naranja vibrante con infusión de naranjas amargas, ruibarbo y hierbas aromáticas.",
+      "image": "https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-11",
+      "name": "Vodka Absolut Original",
+      "category": "Vodka",
+      "abv": 40,
+      "price": 155,
+      "volume": "750 ml",
+      "description": "Destilado continuo en Åhus, Suecia, a partir de trigo de invierno. Puro, limpio y con sutil carácter a grano.",
+      "image": "https://images.unsplash.com/photo-1608885898957-a559228e8749?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-12",
+      "name": "Champagne Brut Imperial",
+      "category": "Vino y Espumante",
+      "abv": 12,
+      "price": 460,
+      "volume": "750 ml",
+      "description": "Burbuja fina y persistente. Aromas elegantes de manzana verde, cítricos, flores blancas y brioche tostado.",
+      "image": "https://images.unsplash.com/photo-1594372365401-3b5ff14eaaed?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "prod-13",
+      "name": "Soda Ginger Ale / Agua Tónica Botella",
+      "category": "Soda y Gaseosa",
+      "abv": 0,
+      "price": 14,
+      "volume": "1.5 Litros",
+      "description": "Mezclador burbujeante y refrescante ideal para combinar con Singani, Gin o Whisky, o disfrutar bien fría.",
+      "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
+      "customTabs": [
+        "tab-libre-1"
+      ]
+    },
+    {
+      "id": "prod-14",
+      "name": "Refresco Cola Original Retornable / No Retornable",
+      "category": "Soda y Gaseosa",
+      "abv": 0,
+      "price": 15,
+      "volume": "2 Litros",
+      "description": "Soda clásica con gas intenso, indispensable para acompañar ron, fernet o comidas.",
+      "image": "https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=600&q=80",
+      "customTabs": [
+        "tab-libre-1"
+      ]
+    },
+    {
+      "id": "prod-15",
+      "name": "Jugo Embotellado de Naranja 100% Natural",
+      "category": "Jugo Embotellado",
+      "abv": 0,
+      "price": 18,
+      "volume": "1 Litro",
+      "description": "Jugo cítrico embotellado pasteurizado, ideal para preparar destornilladores con vodka o tomar directo.",
+      "image": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=600&q=80",
+      "customTabs": [
+        "tab-libre-1"
+      ]
+    },
+    {
+      "id": "prod-16",
+      "name": "Jugo Embotellado de Durazno y Manzana",
+      "category": "Jugo Embotellado",
+      "abv": 0,
+      "price": 16,
+      "volume": "1 Litro",
+      "description": "Néctar frutal embotellado listo para servir frío o mezclar en cócteles suaves sin alcohol.",
+      "image": "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=600&q=80",
+      "customTabs": [
+        "tab-libre-1"
+      ]
+    }
+  ],
+  "customTabs": [
+    {
+      "id": "tab-libre-1",
+      "name": "Combos, Sodas y Extras",
+      "description": "Espacio libre: agrega cualquier producto, soda, jugo, snack o combo sin restricciones."
+    }
+  ],
+  "exportedAt": "2026-11-26T15:50:13.796Z"
+}

@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Alambique | Licorería Boutique & Catálogo Interactivo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Playfair Display & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        obsidian: '#0B0B0E',
+                        charcoal: '#141419',
+                        cardbg: '#1A1A22',
+                        gold: {
+                            400: '#FBBF24',
+                            500: '#D97706',
+                            600: '#B45309',
+                            light: '#FDE68A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Personalización sutil de barra de desplazamiento */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0B0E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2D2D39;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D97706;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-obsidian text-zinc-100 font-sans antialiased min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-amber-300">
+
+    <!-- Notificación Toast Flotante (Reemplazo elegante de alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Barra Superior de Navegación y Controles de Edición -->
+    <header class="sticky top-0 z-40 bg-obsidian/90 backdrop-blur-md border-b border-zinc-800/80 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                
+                <!-- Identidad de la Licorería (Editable en Modo Edición) -->
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-900/30 shrink-0">
+                        <i data-lucide="wine" class="w-6 h-6 text-obsidian stroke-[2.2]"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 id="store-name-display" class="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-amber-400">
+                                El Alambique
+                            </h1>
+                            <button onclick="openStoreSettingsModal()" class="edit-only hidden p-1.5 rounded-lg bg-zinc-800 hover:bg-amber-500/20 text-amber-400 transition-colors" title="Editar nombre, moneda, PIN y límites de precio">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p id="store-slogan-display" class="text-xs sm:text-sm text-zinc-400">
+                            Destilados selectos, vinos de autor y licores del mundo
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción Principales -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <!-- Interruptor Modo Edición (Protegido para Administrador) -->
+                    <button id="toggle-edit-btn" onclick="toggleEditMode()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all border border-zinc-700 bg-charcoal hover:border-amber-500/50 text-zinc-200 shadow-sm" title="Solo el administrador con PIN puede activar el modo edición">
+                        <i id="edit-lock-icon" data-lucide="lock" class="w-4 h-4 text-amber-400"></i>
+                        <span id="edit-btn-text">Admin: OFF</span>
+                    </button>
+
+                    <!-- Botón Agregar Nuevo Trago (Solo visible en Modo Edición) -->
+                    <button onclick="openProductModal()" class="edit-only hidden flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-obsidian shadow-lg shadow-amber-900/30 transition-all">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Agregar Trago</span>
+                    </button>
+
+                    <!-- Acceso Rápido WhatsApp Corporativo (Consultas Directas) -->
+                    <button onclick="openDirectWhatsApp()" class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-sm bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 transition-all" title="Consultar directamente al WhatsApp Corporativo">
+                        <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.031 2c-5.516 0-9.969 4.453-9.969 9.969 0 1.758.459 3.473 1.331 4.985L2 22l5.207-1.366a9.93 9.93 0 0 0 4.824 1.246h.004c5.515 0 9.969-4.454 9.969-9.969A9.93 9.93 0 0 0 19.08 4.92 9.91 9.91 0 0 0 12.031 2zm5.816 14.273c-.245.69-1.425 1.32-1.976 1.404-.507.076-1.148.108-1.853-.116-.428-.136-.977-.318-1.682-.622-2.961-1.278-4.895-4.258-5.043-4.455-.148-.197-1.205-1.603-1.205-3.058 0-1.455.762-2.17 1.033-2.466.271-.296.591-.37.788-.37.197 0 .394.002.566.01.182.009.426-.069.666.508.246.592.837 2.046.911 2.194.074.148.123.32.025.518-.099.197-.148.32-.296.493-.148.173-.311.386-.444.518-.148.148-.302.309-.13.605.173.296.767 1.265 1.646 2.049 1.131 1.008 2.084 1.32 2.38 1.468.296.148.468.123.64-.074.173-.197.739-.862.936-1.158.197-.296.394-.247.665-.148.271.099 1.724.813 2.02.961.296.148.493.222.567.345.074.123.074.714-.171 1.404z"/></svg>
+                        <span class="hidden md:inline">WhatsApp</span>
+                    </button>
+
+                    <!-- Botón Carrito / Cotización -->
+                    <button onclick="toggleCartDrawer()" class="relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-zinc-800/90 hover:bg-zinc-700 text-zinc-100 border border-zinc-700/80 transition-all">
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-amber-400"></i>
+                        <span class="hidden sm:inline">Pedido</span>
+                        <span id="cart-badge" class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-obsidian bg-amber-400 rounded-full">
+                            0
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de Herramientas Extra (Solo visible en Modo Edición) -->
+            <div id="edit-toolbar" class="edit-only hidden mt-4 pt-3 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2 text-amber-300/90">
+                    <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span><strong>Administrador Activo:</strong> Haz clic en cualquier tarjeta para modificar precios, fotos o porcentajes.</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="openStoreSettingsModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 flex items-center gap-1.5 border border-zinc-700">
+                        <i data-lucide="sliders" class="w-3.5 h-3.5 text-amber-400"></i> Config. Tienda y PIN
+                    </button>
+                    <button onclick="openCustomTabModal()" class="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 flex items-center gap-1.5 border border-amber-500/40">
+                        <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-amber-400"></i> Nueva Pestaña Libre
+                    </button>
+                    <button onclick="exportCatalogJSON()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 flex items-center gap-1.5 border border-zinc-700">
+                        <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-400"></i> Exportar JSON
+                    </button>
+                    <label class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 flex items-center gap-1.5 border border-zinc-700 cursor-pointer">
+                        <i data-lucide="upload" class="w-3.5 h-3.5 text-sky-400"></i> Importar JSON
+                        <input type="file" accept=".json" onchange="importCatalogJSON(event)" class="hidden">
+                    </label>
+                    <button onclick="openResetConfirmModal()" class="px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/70 text-red-300 flex items-center gap-1.5 border border-red-800/50">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Restaurar Inicial
+                    </button>
+                    <button onclick="lockAdminMode()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-amber-300 flex items-center gap-1.5 border border-amber-500/30">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Cerrar Sesión Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sección Principal de Navegación por Pestañas (Porcentaje & Costo) y Búsqueda -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Pestañas Clasificadoras por Graduación Alcohólica y Costo -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-2.5">
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                    <i data-lucide="filter" class="w-3.5 h-3.5 text-amber-400"></i>
+                    Explorar Carta por Graduación, Costo y Pestañas Libres
+                </h2>
+                <span id="results-counter" class="text-xs text-zinc-400">Mostrando 16 productos</span>
+            </div>
+
+            <!-- Contenedor Deslizable de Pestañas -->
+            <div id="filter-tabs" class="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+                <button data-tab="all" onclick="setActiveTab('all')" class="tab-btn active shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    <span>Todos</span>
+                </button>
+
+                <button data-tab="zero_abv" onclick="setActiveTab('zero_abv')" class="tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                    <span>Sin Alcohol / Sodas y Jugos (0%)</span>
+                </button>
+                
+                <button data-tab="low_abv" onclick="setActiveTab('low_abv')" class="tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    <span>Baja Graduación (&lt; 15%)</span>
+                </button>
+
+                <button data-tab="mid_abv" onclick="setActiveTab('mid_abv')" class="tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    <span>Graduación Media (15% - 35%)</span>
+                </button>
+
+                <button data-tab="high_abv" onclick="setActiveTab('high_abv')" class="tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                    <span>Alta Graduación (&gt; 35%)</span>
+                </button>
+
+                <button data-tab="budget" onclick="setActiveTab('budget')" class="tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                    <i data-lucide="tag" class="w-4 h-4 text-sky-400"></i>
+                    <span id="tab-budget-label">Económicos / Ofertas</span>
+                </button>
+
+                <button data-tab="premium" onclick="setActiveTab('premium')" class="tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                    <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
+                    <span id="tab-premium-label">Premium / Gama Alta</span>
+                </button>
+
+                <!-- Pestañas Personalizadas Sin Restricciones (Renderizadas dinámicamente) -->
+                <div id="custom-tabs-container" class="flex items-center gap-2 shrink-0"></div>
+
+                <!-- Botón Rápido para Crear Pestaña Personalizada (Solo Admin) -->
+                <button onclick="openCustomTabModal()" class="edit-only hidden shrink-0 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-dashed border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300" title="Crear pestaña personalizada libre para cualquier producto, combo o snack">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    <span>+ Pestaña Libre</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra Secundaria: Buscador, Filtro por Tipo de Bebida y Ordenamiento -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 mb-8 bg-charcoal p-3.5 rounded-2xl border border-zinc-800/90">
+            <!-- Buscador -->
+            <div class="lg:col-span-5 relative">
+                <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="text" id="search-input" oninput="renderProducts()" placeholder="Buscar whisky, soda, jugo, hielo, combo, marca..." class="w-full pl-10 pr-4 py-2.5 bg-obsidian border border-zinc-800 rounded-xl text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors">
+            </div>
+
+            <!-- Filtro por Categoría de Bebida -->
+            <div class="lg:col-span-3">
+                <select id="category-filter" onchange="renderProducts()" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-800 rounded-xl text-sm text-zinc-200 focus:outline-none focus:border-amber-500 transition-colors">
+                    <option value="all">Todas las Categorías</option>
+                    <option value="Whisky">Whisky</option>
+                    <option value="Singani">Singani</option>
+                    <option value="Ron">Ron</option>
+                    <option value="Vodka">Vodka</option>
+                    <option value="Gin">Gin</option>
+                    <option value="Tequila">Tequila</option>
+                    <option value="Vino y Espumante">Vino y Espumante</option>
+                    <option value="Cerveza">Cerveza</option>
+                    <option value="Licor y Aperitivo">Licor y Aperitivo</option>
+                    <option value="Soda y Gaseosa">Soda y Gaseosa</option>
+                    <option value="Jugo Embotellado">Jugo Embotellado</option>
+                    <option value="Hielo, Snacks y Otros">Hielo, Snacks y Otros</option>
+                </select>
+            </div>
+
+            <!-- Ordenamiento por Precio o Porcentaje -->
+            <div class="lg:col-span-4">
+                <select id="sort-select" onchange="renderProducts()" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-800 rounded-xl text-sm text-zinc-200 focus:outline-none focus:border-amber-500 transition-colors">
+                    <option value="default">Ordenar por: Destacados</option>
+                    <option value="price_asc">Precio: Menor a Mayor</option>
+                    <option value="price_desc">Precio: Mayor a Menor</option>
+                    <option value="abv_asc">Graduación (% Alcohol): Menor a Mayor</option>
+                    <option value="abv_desc">Graduación (% Alcohol): Mayor a Menor</option>
+                    <option value="name_asc">Nombre: A - Z</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Cuadrícula de Productos (Tragos / Botellas) -->
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Las tarjetas se renderizan dinámicamente aquí -->
+        </div>
+
+        <!-- Estado Vacío cuando no hay coincidencias -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-16 px-4 text-center bg-charcoal/50 rounded-3xl border border-dashed border-zinc-800">
+            <div class="w-16 h-16 rounded-full bg-zinc-800/80 flex items-center justify-center mb-4 text-amber-400">
+                <i data-lucide="glass-water" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-zinc-200 mb-1">No se encontraron tragos en esta sección</h3>
+            <p class="text-sm text-zinc-400 max-w-md mb-5">Intenta cambiar la pestaña de graduación/costo, limpiar el buscador o solicita al administrador agregar un nuevo producto.</p>
+            <button onclick="resetFilters()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-obsidian font-semibold text-sm transition-colors">
+                Ver Todo el Catálogo
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer Elegante -->
+    <footer class="border-t border-zinc-800/80 bg-charcoal/60 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="wine" class="w-4 h-4 text-amber-500"></i>
+                    <span id="footer-store-name" class="font-medium text-zinc-300">El Alambique</span>
+                    <span>— Catálogo Digital Interactivo</span>
+                </div>
+                <button onclick="openDirectWhatsApp()" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-400 border border-emerald-500/30 transition-colors">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.031 2c-5.516 0-9.969 4.453-9.969 9.969 0 1.758.459 3.473 1.331 4.985L2 22l5.207-1.366a9.93 9.93 0 0 0 4.824 1.246h.004c5.515 0 9.969-4.454 9.969-9.969A9.93 9.93 0 0 0 19.08 4.92 9.91 9.91 0 0 0 12.031 2zm5.816 14.273c-.245.69-1.425 1.32-1.976 1.404-.507.076-1.148.108-1.853-.116-.428-.136-.977-.318-1.682-.622-2.961-1.278-4.895-4.258-5.043-4.455-.148-.197-1.205-1.603-1.205-3.058 0-1.455.762-2.17 1.033-2.466.271-.296.591-.37.788-.37.197 0 .394.002.566.01.182.009.426-.069.666.508.246.592.837 2.046.911 2.194.074.148.123.32.025.518-.099.197-.148.32-.296.493-.148.173-.311.386-.444.518-.148.148-.302.309-.13.605.173.296.767 1.265 1.646 2.049 1.131 1.008 2.084 1.32 2.38 1.468.296.148.468.123.64-.074.173-.197.739-.862.936-1.158.197-.296.394-.247.665-.148.271.099 1.724.813 2.02.961.296.148.493.222.567.345.074.123.074.714-.171 1.404z"/></svg>
+                    <span id="footer-whatsapp-display">+591 70000000</span>
+                </button>
+            </div>
+            <p class="text-center sm:text-right">El consumo excesivo de alcohol es perjudicial para la salud. Prohibida su venta a menores de 18 años.</p>
+        </div>
+    </footer>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: INICIO DE SESIÓN DE ADMINISTRADOR                              -->
+    <!-- ===================================================================== -->
+    <div id="admin-login-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-charcoal border border-zinc-700/80 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-obsidian/50">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i>
+                    <h3 class="font-serif text-lg font-bold text-amber-400">Acceso Administrador</h3>
+                </div>
+                <button type="button" onclick="closeAdminLoginModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="verifyAdminLogin(event)" class="p-6 space-y-4">
+                <p class="text-xs text-zinc-400 leading-relaxed">
+                    Solo el administrador puede añadir, editar o eliminar tragos y pestañas. Ingresa tu PIN para continuar.
+                </p>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">PIN de Administrador</label>
+                    <input type="password" id="admin-pin-input" required autocomplete="current-password" placeholder="Ingresa el PIN" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-1">
+                    <button type="button" onclick="closeAdminLoginModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-zinc-800">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-obsidian">Ingresar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: AGREGAR / EDITAR PRODUCTO                                      -->
+    <!-- ===================================================================== -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-charcoal border border-zinc-700/80 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-fade-in">
+            <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-obsidian/50">
+                <h3 id="product-modal-title" class="font-serif text-xl font-bold text-amber-400">Agregar Nuevo Trago</h3>
+                <button onclick="closeProductModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="product-form" onsubmit="saveProductForm(event)" class="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
+                <input type="hidden" id="prod-id">
+
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Nombre del Trago / Botella *</label>
+                    <input type="text" id="prod-name" required placeholder="Ej. Singani Casa Real Etiqueta Negra" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Precio (<span class="currency-symbol">Bs.</span>) *</label>
+                        <input type="number" id="prod-price" required min="0" step="0.01" placeholder="145.00" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Graduación (% Alcohol) *</label>
+                        <input type="number" id="prod-abv" required min="0" max="100" step="0.1" placeholder="40.0" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Categoría *</label>
+                        <select id="prod-category" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                            <option value="Whisky">Whisky</option>
+                            <option value="Singani">Singani</option>
+                            <option value="Ron">Ron</option>
+                            <option value="Vodka">Vodka</option>
+                            <option value="Gin">Gin</option>
+                            <option value="Tequila">Tequila</option>
+                            <option value="Vino y Espumante">Vino y Espumante</option>
+                            <option value="Cerveza">Cerveza</option>
+                            <option value="Licor y Aperitivo">Licor y Aperitivo</option>
+                            <option value="Soda y Gaseosa">Soda y Gaseosa</option>
+                            <option value="Jugo Embotellado">Jugo Embotellado</option>
+                            <option value="Hielo, Snacks y Otros">Hielo, Snacks y Otros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Presentación / Volumen</label>
+                        <input type="text" id="prod-volume" placeholder="Ej. 750 ml / 2 Litros / Pack x6" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <!-- Asignación a Pestañas Personalizadas Sin Restricciones -->
+                <div id="prod-custom-tabs-wrapper" class="bg-obsidian/60 p-3 rounded-xl border border-zinc-800">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-medium text-amber-300">Asignar a Pestañas Libres (Opcional)</label>
+                        <button type="button" onclick="openCustomTabModal()" class="text-[11px] text-amber-400 hover:underline">+ Crear nueva pestaña</button>
+                    </div>
+                    <div id="prod-custom-tabs-checkboxes" class="flex flex-wrap gap-2">
+                        <!-- Checkboxes de pestañas personalizadas -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Descripción / Notas de Cata</label>
+                    <textarea id="prod-desc" rows="2" placeholder="Breve descripción del sabor, origen o recomendación..." class="w-full px-3.5 py-2 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500"></textarea>
+                </div>
+
+                <!-- Sección de Imagen: URL o Subida Local -->
+                <div class="bg-obsidian/70 p-3.5 rounded-xl border border-zinc-800 space-y-3">
+                    <label class="block text-xs font-medium text-amber-400">Fotografía del Producto</label>
+                    <div class="flex items-center gap-3">
+                        <img id="prod-img-preview" src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=300&q=80" alt="Vista previa" class="w-16 h-16 rounded-xl object-cover border border-zinc-700 shrink-0">
+                        <div class="flex-grow space-y-2">
+                            <input type="text" id="prod-img-url" oninput="updateImagePreview(this.value)" placeholder="Pega una URL de imagen (https://...)" class="w-full px-3 py-1.5 bg-charcoal border border-zinc-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500">
+                            <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200 cursor-pointer transition-colors">
+                                <i data-lucide="image-plus" class="w-3.5 h-3.5 text-amber-400"></i>
+                                <span>O subir foto desde tu dispositivo</span>
+                                <input type="file" accept="image/*" onchange="handleLocalImageUpload(event)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-3 border-t border-zinc-800">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-300 hover:bg-zinc-800 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-amber-500 hover:bg-amber-400 text-obsidian shadow-lg shadow-amber-900/30 transition-colors">
+                        Guardar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: CREAR / EDITAR PESTAÑA PERSONALIZADA SIN RESTRICCIONES         -->
+    <!-- ===================================================================== -->
+    <div id="custom-tab-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-charcoal border border-zinc-700/80 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-obsidian/50">
+                <h3 id="custom-tab-modal-title" class="font-serif text-xl font-bold text-amber-400">Gestionar Pestañas Libres</h3>
+                <button onclick="closeCustomTabModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
+                <form onsubmit="saveCustomTabForm(event)" class="space-y-3 bg-obsidian/70 p-4 rounded-xl border border-zinc-800">
+                    <input type="hidden" id="custom-tab-id">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Nombre de la Pestaña Libre *</label>
+                        <input type="text" id="custom-tab-name" required placeholder="Ej. Combos Fin de Semana, Hielo y Snacks, Promos..." class="w-full px-3.5 py-2.5 bg-charcoal border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Descripción o subtítulo de la sección (Opcional)</label>
+                        <input type="text" id="custom-tab-desc" placeholder="Ej. Todo lo que quieras agregar sin límites de grado o precio" class="w-full px-3.5 py-2 bg-charcoal border border-zinc-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-1">
+                        <button type="button" id="cancel-edit-tab-btn" onclick="resetCustomTabForm()" class="hidden px-3 py-2 rounded-xl text-xs text-zinc-300 hover:bg-zinc-800">Cancelar Edición</button>
+                        <button type="submit" id="save-custom-tab-btn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-obsidian">
+                            Guardar Pestaña
+                        </button>
+                    </div>
+                </form>
+
+                <div>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">Pestañas Personalizadas Creadas</h4>
+                    <div id="custom-tabs-manage-list" class="space-y-2">
+                        <!-- Lista de pestañas personalizadas para editar o eliminar -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL: CONFIRMACIÓN PERSONALIZADA (SIN USAR window.confirm)           -->
+    <!-- ===================================================================== -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-charcoal border border-zinc-700 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center">
+            <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h4 id="confirm-title" class="text-lg font-bold text-white mb-2">¿Estás seguro?</h4>
+            <p id="confirm-message" class="text-sm text-zinc-400 mb-6">Esta acción no se puede deshacer.</p>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 rounded-xl text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200">Cancelar</button>
+                <button id="confirm-accept-btn" class="px-4 py-2 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-500 text-white">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- PANEL LATERAL (DRAWER): PEDIDO / COTIZACIÓN RÁPIDA                    -->
+    <!-- ===================================================================== -->
+    <div id="cart-overlay" onclick="toggleCartDrawer()" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs transition-opacity"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-charcoal border-l border-zinc-800 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-obsidian">
+            <div class="flex items-center gap-2.5">
+                <i data-lucide="shopping-bag" class="w-5 h-5 text-amber-400"></i>
+                <h3 class="font-serif text-lg font-bold text-white">Tu Lista de Pedido</h3>
+            </div>
+            <button onclick="toggleCartDrawer()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 space-y-4">
+            <!-- Items del carrito renderizados dinámicamente -->
+        </div>
+
+        <div class="p-5 border-t border-zinc-800 bg-obsidian/95 space-y-3.5">
+            <!-- Datos Opcionales del Cliente para Entrega -->
+            <div class="bg-charcoal/90 p-3 rounded-xl border border-zinc-800/90 space-y-2">
+                <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Datos para el envío (Opcional)</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input type="text" id="checkout-customer-name" placeholder="Tu nombre" class="w-full px-3 py-2 bg-obsidian border border-zinc-700/80 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="checkout-customer-address" placeholder="Dirección o zona" class="w-full px-3 py-2 bg-obsidian border border-zinc-700/80 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-base pt-1">
+                <span class="text-zinc-400">Total a Cancelar:</span>
+                <span id="cart-total-display" class="text-2xl font-bold text-amber-400">Bs. 0.00</span>
+            </div>
+
+            <!-- Botón Principal: Confirmar y Pagar por WhatsApp -->
+            <button onclick="checkoutViaWhatsApp()" class="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-[#25D366] hover:bg-[#20bd5a] text-obsidian flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/50 transition-all active:scale-[0.99]">
+                <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.031 2c-5.516 0-9.969 4.453-9.969 9.969 0 1.758.459 3.473 1.331 4.985L2 22l5.207-1.366a9.93 9.93 0 0 0 4.824 1.246h.004c5.515 0 9.969-4.454 9.969-9.969A9.93 9.93 0 0 0 19.08 4.92 9.91 9.91 0 0 0 12.031 2zm5.816 14.273c-.245.69-1.425 1.32-1.976 1.404-.507.076-1.148.108-1.853-.116-.428-.136-.977-.318-1.682-.622-2.961-1.278-4.895-4.258-5.043-4.455-.148-.197-1.205-1.603-1.205-3.058 0-1.455.762-2.17 1.033-2.466.271-.296.591-.37.788-.37.197 0 .394.002.566.01.182.009.426-.069.666.508.246.592.837 2.046.911 2.194.074.148.123.32.025.518-.099.197-.148.32-.296.493-.148.173-.311.386-.444.518-.148.148-.302.309-.13.605.173.296.767 1.265 1.646 2.049 1.131 1.008 2.084 1.32 2.38 1.468.296.148.468.123.64-.074.173-.197.739-.862.936-1.158.197-.296.394-.247.665-.148.271.099 1.724.813 2.02.961.296.148.493.222.567.345.074.123.074.714-.171 1.404z"/></svg>
+                <span>Confirmar y Pagar por WhatsApp</span>
+            </button>
+
+            <!-- Botones Secundarios: Vaciar y Copiar Texto -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <button onclick="clearCart()" class="px-3.5 py-2.5 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors">
+                    Vaciar Lista
+                </button>
+                <button onclick="copyOrderToClipboard()" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 flex items-center justify-center gap-1.5 transition-colors">
+                    <i data-lucide="copy" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span>Copiar Texto</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===================================================================== -->
+    <!-- CHATBOT SOMMELIER / ASISTENTE VIRTUAL                                 -->
+    <!-- ===================================================================== -->
+    <div id="chatbot-widget" class="fixed bottom-5 left-5 z-40">
+        <!-- Botón Flotante para Abrir / Cerrar Chat -->
+        <button id="chatbot-toggle-btn" onclick="toggleChatbot()" class="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-obsidian font-semibold text-sm shadow-2xl shadow-amber-950/60 transition-all active:scale-95">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+            <span>Sommelier IA</span>
+            <span id="chatbot-unread-dot" class="hidden w-2.5 h-2.5 rounded-full bg-emerald-950 ring-2 ring-obsidian"></span>
+        </button>
+
+        <!-- Ventana del Chatbot -->
+        <div id="chatbot-window" class="hidden fixed sm:static bottom-20 left-4 right-4 sm:mt-3 w-auto sm:w-96 max-h-[75vh] bg-charcoal border border-zinc-700/90 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <!-- Cabecera del Chatbot -->
+            <div class="px-4 py-3.5 bg-obsidian border-b border-zinc-800 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-zinc-100">Asistente de la Licorería</h4>
+                        <p class="text-[11px] text-emerald-400 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                            En línea • Guía de tragos
+                        </p>
+                    </div>
+                </div>
+                <button type="button" onclick="toggleChatbot()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800" title="Minimizar chat">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Historial de Mensajes -->
+            <div id="chatbot-messages" class="flex-grow overflow-y-auto p-4 space-y-3 text-xs max-h-80">
+                <!-- Mensajes renderizados dinámicamente -->
+            </div>
+
+            <!-- Sugerencias Rápidas -->
+            <div id="chatbot-quick-replies" class="px-3.5 py-2 bg-obsidian/60 border-t border-zinc-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <button type="button" onclick="sendBotPrompt('¿Cuál es el trago más fuerte?')" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/70 text-rose-300 border border-rose-500/30 text-[11px] font-medium transition-colors">
+                    🔥 Trago más fuerte
+                </button>
+                <button type="button" onclick="sendBotPrompt('No conozco de tragos, ayúdame')" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-medium transition-colors">
+                    🍷 No conozco de tragos
+                </button>
+                <button type="button" onclick="sendBotPrompt('Opciones suaves o sin alcohol')" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/30 text-[11px] font-medium transition-colors">
+                    🌿 Suaves / 0%
+                </button>
+                <button type="button" onclick="sendBotPrompt('Tragos económicos')" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-sky-950/60 hover:bg-sky-900/70 text-sky-300 border border-sky-500/30 text-[11px] font-medium transition-colors">
+                    💰 Económicos
+                </button>
+            </div>
+
+            <!-- Entrada de Texto del Usuario -->
+            <form onsubmit="handleChatbotSubmit(event)" class="p-3 bg-obsidian border-t border-zinc-800 flex items-center gap-2">
+                <input type="text" id="chatbot-input" placeholder="Pregunta por el trago más fuerte o pide ayuda..." class="flex-grow px-3 py-2 bg-charcoal border border-zinc-700 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500">
+                <button type="submit" class="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-obsidian transition-colors shrink-0" title="Enviar mensaje">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- LÓGICA DE APLICACIÓN JAVASCRIPT                                       -->
+    <!-- ===================================================================== -->
+    <script>
+        // Imagen de respaldo garantizada en caso de URL rota
+        const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=600&q=80";
+
+        // Configuración por defecto de la tienda (incluye PIN de administrador)
+        const DEFAULT_SETTINGS = {
+            storeName: "El Alambique",
+            storeSlogan: "Destilados selectos, vinos de autor y licores del mundo",
+            currency: "Bs.",
+            budgetMax: 140,
+            premiumMin: 250,
+            whatsappNumber: "59170000000",
+            whatsappPaymentNote: "Solicito los datos de pago (QR / transferencia) para cancelar mi pedido y coordinar la entrega.",
+            adminPin: "1234"
+        };
+
+        // Catálogo inicial con 16 productos realistas, variados en graduación y precio
+        const DEFAULT_PRODUCTS = [
+            {
+                id: "prod-1",
+                name: "Singani Casa Real Etiqueta Negra",
+                category: "Singani",
+                abv: 40.0,
+                price: 135,
+                volume: "750 ml",
+                description: "Destilado de uva Moscatel de Alejandría en los valles de Tarija. Aromático, cristalino e ideal para Chuflay.",
+                image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-2",
+                name: "Whisky Johnnie Walker Black Label 12 Años",
+                category: "Whisky",
+                abv: 40.0,
+                price: 310,
+                volume: "750 ml",
+                description: "Blended Scotch Whisky icónico con notas profundas de vainilla dulce, piel de naranja y un final ahumado.",
+                image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-3",
+                name: "Vino Tinto Malbec Reserva",
+                category: "Vino y Espumante",
+                abv: 13.5,
+                price: 115,
+                volume: "750 ml",
+                description: "Crianza de 12 meses en barrica de roble francés. Notas a ciruelas maduras, frutos rojos y sutil toque de cacao.",
+                image: "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-4",
+                name: "Gin Tanqueray London Dry",
+                category: "Gin",
+                abv: 43.1,
+                price: 245,
+                volume: "750 ml",
+                description: "Destilado cuatro veces con botánicos seleccionados: enebro, cilantro, raíz de angélica y regaliz.",
+                image: "https://images.unsplash.com/photo-1614313511387-1436a4480ebb?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-5",
+                name: "Cerveza Artesanal IPA (Pack x6)",
+                category: "Cerveza",
+                abv: 6.2,
+                price: 78,
+                volume: "6 x 330 ml",
+                description: "India Pale Ale lupulada con intensos aromas cítricos, maracuyá y un amargor equilibrado y refrescante.",
+                image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-6",
+                name: "Licor de Hierbas Jägermeister",
+                category: "Licor y Aperitivo",
+                abv: 35.0,
+                price: 195,
+                volume: "700 ml",
+                description: "Elaborado con 56 hierbas, frutas, raíces y especias maceradas. Se recomienda servir bien frío a -18°C.",
+                image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-7",
+                name: "Crema Irlandesa Baileys Original",
+                category: "Licor y Aperitivo",
+                abv: 17.0,
+                price: 185,
+                volume: "750 ml",
+                description: "Deliciosa fusión de crema de leche irlandesa fresca, whisky irlandés añejo y finas notas de cacao y vainilla.",
+                image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-8",
+                name: "Ron Havana Club Añejo 7 Años",
+                category: "Ron",
+                abv: 40.0,
+                price: 210,
+                volume: "750 ml",
+                description: "El epítome del ron añejo cubano. Sabores ricos a cacao, vainilla, cedro, tabaco dulce y frutas tropicales.",
+                image: "https://images.unsplash.com/photo-1598155523122-38423bb4d6c1?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-9",
+                name: "Tequila José Cuervo Especial Reposado",
+                category: "Tequila",
+                abv: 38.0,
+                price: 175,
+                volume: "750 ml",
+                description: "Tequila joven reposado en barricas de roble blanco con notas suaves de agave cocido, roble y vainilla.",
+                image: "https://images.unsplash.com/photo-1516535794938-6063878f08cc?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-10",
+                name: "Aperol Aperitivo Italiano",
+                category: "Licor y Aperitivo",
+                abv: 11.0,
+                price: 130,
+                volume: "750 ml",
+                description: "Aperitivo ligero de color naranja vibrante con infusión de naranjas amargas, ruibarbo y hierbas aromáticas.",
+                image: "https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-11",
+                name: "Vodka Absolut Original",
+                category: "Vodka",
+                abv: 40.0,
+                price: 155,
+                volume: "750 ml",
+                description: "Destilado continuo en Åhus, Suecia, a partir de trigo de invierno. Puro, limpio y con sutil carácter a grano.",
+                image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-12",
+                name: "Champagne Brut Imperial",
+                category: "Vino y Espumante",
+                abv: 12.0,
+                price: 460,
+                volume: "750 ml",
+                description: "Burbuja fina y persistente. Aromas elegantes de manzana verde, cítricos, flores blancas y brioche tostado.",
+                image: "https://images.unsplash.com/photo-1594372365401-3b5ff14eaaed?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "prod-13",
+                name: "Soda Ginger Ale / Agua Tónica Botella",
+                category: "Soda y Gaseosa",
+                abv: 0.0,
+                price: 14,
+                volume: "1.5 Litros",
+                description: "Mezclador burbujeante y refrescante ideal para combinar con Singani, Gin o Whisky, o disfrutar bien fría.",
+                image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
+                customTabs: ["tab-libre-1"]
+            },
+            {
+                id: "prod-14",
+                name: "Refresco Cola Original Retornable / No Retornable",
+                category: "Soda y Gaseosa",
+                abv: 0.0,
+                price: 15,
+                volume: "2 Litros",
+                description: "Soda clásica con gas intenso, indispensable para acompañar ron, fernet o comidas.",
+                image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=600&q=80",
+                customTabs: ["tab-libre-1"]
+            },
+            {
+                id: "prod-15",
+                name: "Jugo Embotellado de Naranja 100% Natural",
+                category: "Jugo Embotellado",
+                abv: 0.0,
+                price: 18,
+                volume: "1 Litro",
+                description: "Jugo cítrico embotellado pasteurizado, ideal para preparar destornilladores con vodka o tomar directo.",
+                image: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=600&q=80",
+                customTabs: ["tab-libre-1"]
+            },
+            {
+                id: "prod-16",
+                name: "Jugo Embotellado de Durazno y Manzana",
+                category: "Jugo Embotellado",
+                abv: 0.0,
+                price: 16,
+                volume: "1 Litro",
+                description: "Néctar frutal embotellado listo para servir frío o mezclar en cócteles suaves sin alcohol.",
+                image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=600&q=80",
+                customTabs: ["tab-libre-1"]
+            }
+        ];
+
+        // Pestañas personalizadas sin restricciones por defecto
+        const DEFAULT_CUSTOM_TABS = [
+            {
+                id: "tab-libre-1",
+                name: "Combos, Sodas y Extras",
+                description: "Espacio libre: agrega cualquier producto, soda, jugo, snack o combo sin restricciones."
+            }
+        ];
+
+        // Estado global de la aplicación
+        let storeSettings = { ...DEFAULT_SETTINGS };
+        let products = [];
+        let customTabs = [];
+        let cart = [];
+        let activeTab = "all";
+        let isEditMode = false;
+        let chatbotInitialized = false;
+
+        // Inicialización al cargar la página
+        document.addEventListener("DOMContentLoaded", () => {
+            loadFromLocalStorage();
+            applyStoreSettingsToUI();
+            renderCustomTabsBar();
+            updateTabStyles();
+            renderProducts();
+            renderCart();
+            initChatbotGreeting();
+            lucide.createIcons();
+        });
+
+        // Cargar datos guardados en localStorage
+        function loadFromLocalStorage() {
+            try {
+                const savedSettings = localStorage.getItem("licoreria_settings_v1");
+                const savedProducts = localStorage.getItem("licoreria_products_v1");
+                const savedCustomTabs = localStorage.getItem("licoreria_custom_tabs_v1");
+                const savedCart = localStorage.getItem("licoreria_cart_v1");
+
+                if (savedSettings) storeSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
+                if (savedProducts) {
+                    products = JSON.parse(savedProducts);
+                } else {
+                    products = [...DEFAULT_PRODUCTS];
+                }
+                if (savedCustomTabs) {
+                    customTabs = JSON.parse(savedCustomTabs);
+                } else {
+                    customTabs = [...DEFAULT_CUSTOM_TABS];
+                }
+                if (savedCart) cart = JSON.parse(savedCart);
+            } catch (e) {
+                console.error("Error leyendo localStorage:", e);
+                products = [...DEFAULT_PRODUCTS];
+                customTabs = [...DEFAULT_CUSTOM_TABS];
+            }
+        }
+
+        // Guardar estado actual en localStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem("licoreria_settings_v1", JSON.stringify(storeSettings));
+                localStorage.setItem("licoreria_products_v1", JSON.stringify(products));
+                localStorage.setItem("licoreria_custom_tabs_v1", JSON.stringify(customTabs));
+                localStorage.setItem("licoreria_cart_v1", JSON.stringify(cart));
+            } catch (e) {
+                showToast("No se pudo guardar en el navegador (espacio lleno).", "error");
+            }
+        }
+
+        // Limpiar número telefónico dejando únicamente dígitos para enlaces wa.me
+        function sanitizePhoneNumber(phone) {
+            if (!phone) return "";
+            return String(phone).replace(/\D+/g, "");
+        }
+
+        // Actualizar cabecera y etiquetas con la configuración actual
+        function applyStoreSettingsToUI() {
+            document.getElementById("store-name-display").textContent = storeSettings.storeName;
+            document.getElementById("footer-store-name").textContent = storeSettings.storeName;
+            document.getElementById("store-slogan-display").textContent = storeSettings.storeSlogan;
+
+            const cleanPhone = sanitizePhoneNumber(storeSettings.whatsappNumber);
+            const footerPhoneEl = document.getElementById("footer-whatsapp-display");
+            if (footerPhoneEl) {
+                footerPhoneEl.textContent = cleanPhone ? `+${cleanPhone}` : "Configurar WhatsApp";
+            }
+
+            document.querySelectorAll(".currency-symbol").forEach(el => {
+                el.textContent = storeSettings.currency;
+            });
+
+            document.getElementById("tab-budget-label").textContent = `Económicos (≤ ${storeSettings.currency} ${storeSettings.budgetMax})`;
+            document.getElementById("tab-premium-label").textContent = `Premium (≥ ${storeSettings.currency} ${storeSettings.premiumMin})`;
+        }
+
+        // Cambiar pestaña activa (Graduación Alcohólica / Costo / Libre)
+        function setActiveTab(tabId) {
+            activeTab = tabId;
+            updateTabStyles();
+            renderProducts();
+        }
+
+        function renderCustomTabsBar() {
+            const container = document.getElementById("custom-tabs-container");
+            if (!container) return;
+
+            container.innerHTML = customTabs.map(tab => `
+                <div class="inline-flex items-center shrink-0">
+                    <button data-tab="${tab.id}" onclick="setActiveTab('${tab.id}')" class="tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                        <span>${tab.name}</span>
+                    </button>
+                </div>
+            `).join("");
+            updateTabStyles();
+        }
+
+        function updateTabStyles() {
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                const isSelected = btn.getAttribute("data-tab") === activeTab;
+                if (isSelected) {
+                    btn.className = "tab-btn active shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border border-amber-400 bg-amber-500/15 text-amber-300 shadow-sm shadow-amber-950/30";
+                } else {
+                    btn.className = "tab-btn shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 border border-zinc-800 bg-charcoal hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200";
+                }
+            });
+        }
+
+        // Obtener insignia visual según porcentaje de alcohol (% ABV)
+        function getAbvBadge(abv) {
+            const numericAbv = Number(abv) || 0;
+            if (numericAbv === 0) {
+                return {
+                    label: `0% Sin Alcohol`,
+                    classes: "bg-cyan-950/90 text-cyan-300 border-cyan-500/40",
+                    level: "Sin Alcohol"
+                };
+            } else if (numericAbv < 15) {
+                return {
+                    label: `${numericAbv}% Alc.`,
+                    classes: "bg-emerald-950/90 text-emerald-300 border-emerald-500/40",
+                    level: "Suave"
+                };
+            } else if (numericAbv <= 35) {
+                return {
+                    label: `${numericAbv}% Alc.`,
+                    classes: "bg-amber-950/90 text-amber-300 border-amber-500/40",
+                    level: "Medio"
+                };
+            } else {
+                return {
+                    label: `${numericAbv}% Alc.`,
+                    classes: "bg-rose-950/90 text-rose-300 border-rose-500/40",
+                    level: "Fuerte"
+                };
+            }
+        }
+
+        // Renderizar tarjetas de productos filtradas y ordenadas
+        function renderProducts() {
+            const grid = document.getElementById("products-grid");
+            const emptyState = document.getElementById("empty-state");
+            const searchQuery = document.getElementById("search-input").value.toLowerCase().trim();
+            const categoryFilter = document.getElementById("category-filter").value;
+            const sortBy = document.getElementById("sort-select").value;
+
+            // 1. Filtrar por pestaña de Porcentaje, Costo o Pestaña Personalizada Libre
+            let filtered = products.filter(p => {
+                const abv = Number(p.abv) || 0;
+                const price = Number(p.price) || 0;
+
+                if (activeTab === "zero_abv" && !(abv === 0 || p.category === "Soda y Gaseosa" || p.category === "Jugo Embotellado")) return false;
+                if (activeTab === "low_abv" && !(abv > 0 && abv < 15)) return false;
+                if (activeTab === "mid_abv" && !(abv >= 15 && abv <= 35)) return false;
+                if (activeTab === "high_abv" && !(abv > 35)) return false;
+                if (activeTab === "budget" && !(price <= storeSettings.budgetMax)) return false;
+                if (activeTab === "premium" && !(price >= storeSettings.premiumMin)) return false;
+
+                // Si es una pestaña personalizada libre
+                const isCustomTab = customTabs.some(t => t.id === activeTab);
+                if (isCustomTab) {
+                    const assigned = Array.isArray(p.customTabs) ? p.customTabs : [];
+                    if (!assigned.includes(activeTab)) return false;
+                }
+
+                // 2. Filtrar por categoría específica
+                if (categoryFilter !== "all" && p.category !== categoryFilter) return false;
+
+                // 3. Filtrar por texto de búsqueda
+                if (searchQuery) {
+                    const matchName = p.name.toLowerCase().includes(searchQuery);
+                    const matchCat = p.category.toLowerCase().includes(searchQuery);
+                    const matchDesc = (p.description || "").toLowerCase().includes(searchQuery);
+                    if (!matchName && !matchCat && !matchDesc) return false;
+                }
+
+                return true;
+            });
+
+            // 4. Ordenar resultados
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case "price_asc": return Number(a.price) - Number(b.price);
+                    case "price_desc": return Number(b.price) - Number(a.price);
+                    case "abv_asc": return Number(a.abv) - Number(b.abv);
+                    case "abv_desc": return Number(b.abv) - Number(a.abv);
+                    case "name_asc": return a.name.localeCompare(b.name);
+                    default: return 0;
+                }
+            });
+
+            // Actualizar contador
+            document.getElementById("results-counter").textContent = `Mostrando ${filtered.length} de ${products.length} productos`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = "";
+                emptyState.classList.remove("hidden");
+                emptyState.classList.add("flex");
+                return;
+            }
+
+            emptyState.classList.add("hidden");
+            emptyState.classList.remove("flex");
+
+            grid.innerHTML = filtered.map(product => {
+                const abv = Number(product.abv) || 0;
+                const price = Number(product.price) || 0;
+                const badge = getAbvBadge(abv);
+                const isPremium = price >= storeSettings.premiumMin;
+                const isBudget = price <= storeSettings.budgetMax;
+
+                return `
+                <article class="group relative bg-cardbg rounded-2xl border ${isEditMode ? 'border-amber-500/40' : 'border-zinc-800/90 hover:border-amber-500/40'} overflow-hidden flex flex-col shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    
+                    <!-- Imagen del Producto -->
+                    <div class="relative h-56 w-full bg-obsidian overflow-hidden">
+                        <img src="${product.image || FALLBACK_IMAGE}" 
+                             alt="${product.name}" 
+                             onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';"
+                             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500">
+                        
+                        <!-- Gradiente oscuro inferior para legibilidad -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-cardbg via-transparent to-black/40"></div>
+
+                        <!-- Insignia Superior Izquierda: Categoría -->
+                        <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-medium bg-obsidian/85 backdrop-blur-md text-zinc-200 border border-zinc-700/70">
+                            ${product.category}
+                        </span>
+
+                        <!-- Insignia Superior Derecha: % de Alcohol -->
+                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-bold border backdrop-blur-md shadow-md ${badge.classes}">
+                            ${badge.label}
+                        </span>
+
+                        <!-- Etiqueta Especial de Costo (Oferta o Premium) -->
+                        ${isPremium ? `
+                            <span class="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/90 text-obsidian">
+                                <i data-lucide="crown" class="w-3 h-3"></i> Reserva / Premium
+                            </span>
+                        ` : isBudget ? `
+                            <span class="absolute bottom-3 left-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-500/90 text-obsidian">
+                                <i data-lucide="tag" class="w-3 h-3"></i> Precio Accesible
+                            </span>
+                        ` : ''}
+
+                        <!-- Controles Rápidos de Edición (Visibles solo en Modo Edición de Administrador) -->
+                        ${isEditMode ? `
+                            <div class="absolute inset-0 bg-obsidian/65 backdrop-blur-[2px] flex items-center justify-center gap-3 opacity-100 transition-opacity">
+                                <button onclick="openProductModal('${product.id}')" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-obsidian font-semibold text-xs flex items-center gap-1.5 shadow-lg">
+                                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Editar
+                                </button>
+                                <button onclick="confirmDeleteProduct('${product.id}')" class="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-lg">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Cuerpo de Información -->
+                    <div class="p-5 flex-grow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-1.5">
+                                <h3 class="font-serif text-lg font-bold text-zinc-100 leading-snug group-hover:text-amber-400 transition-colors">
+                                    ${product.name}
+                                </h3>
+                            </div>
+                            <p class="text-xs text-amber-400/80 font-medium mb-2">${product.volume || '750 ml'} • Intensidad ${badge.level}</p>
+                            <p class="text-xs text-zinc-400 line-clamp-2 leading-relaxed mb-4">
+                                ${product.description || 'Selección especial disponible en tienda.'}
+                            </p>
+                        </div>
+
+                        <!-- Pie de Tarjeta: Precio y Botón de Pedido -->
+                        <div class="pt-3.5 border-t border-zinc-800/80 flex items-center justify-between gap-2">
+                            <div>
+                                <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Precio</span>
+                                <span class="text-xl font-bold text-amber-400">
+                                    ${storeSettings.currency} ${price.toFixed(2)}
+                                </span>
+                            </div>
+
+                            ${isEditMode ? `
+                                <button onclick="openProductModal('${product.id}')" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-colors">
+                                    Modificar
+                                </button>
+                            ` : `
+                                <button onclick="addToCart('${product.id}')" class="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-amber-500 text-zinc-100 hover:text-obsidian font-semibold text-xs flex items-center gap-1.5 transition-all active:scale-95">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>Agregar</span>
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </article>
+                `;
+            }).join("");
+
+            lucide.createIcons();
+        }
+
+        function resetFilters() {
+            activeTab = "all";
+            document.getElementById("search-input").value = "";
+            document.getElementById("category-filter").value = "all";
+            document.getElementById("sort-select").value = "default";
+            updateTabStyles();
+            renderProducts();
+        }
+
+        // =====================================================================
+        // MODO ADMINISTRADOR (SOLO ADMIN PUEDE AGREGAR/EDITAR/ELIMINAR)
+        // =====================================================================
+
+        function applyEditModeUI() {
+            const btnText = document.getElementById("edit-btn-text");
+            const toggleBtn = document.getElementById("toggle-edit-btn");
+            const lockIcon = document.getElementById("edit-lock-icon");
+            const editElements = document.querySelectorAll(".edit-only");
+
+            if (isEditMode) {
+                btnText.textContent = "Admin: ON";
+                toggleBtn.classList.remove("border-zinc-700", "bg-charcoal", "text-zinc-200");
+                toggleBtn.classList.add("border-amber-400", "bg-amber-500/20", "text-amber-300");
+                if (lockIcon) lockIcon.setAttribute("data-lucide", "unlock");
+                editElements.forEach(el => el.classList.remove("hidden"));
+            } else {
+                btnText.textContent = "Admin: OFF";
+                toggleBtn.classList.remove("border-amber-400", "bg-amber-500/20", "text-amber-300");
+                toggleBtn.classList.add("border-zinc-700", "bg-charcoal", "text-zinc-200");
+                if (lockIcon) lockIcon.setAttribute("data-lucide", "lock");
+                editElements.forEach(el => el.classList.add("hidden"));
+            }
+
+            renderProducts();
+            lucide.createIcons();
+        }
+
+        function toggleEditMode() {
+            if (isEditMode) {
+                lockAdminMode();
+            } else {
+                openAdminLoginModal();
+            }
+        }
+
+        function lockAdminMode() {
+            isEditMode = false;
+            closeProductModal();
+            closeCustomTabModal();
+            closeStoreSettingsModal();
+            applyEditModeUI();
+            showToast("Sesión de administrador cerrada.", "info");
+        }
+
+        function openAdminLoginModal() {
+            const modal = document.getElementById("admin-login-modal");
+            const input = document.getElementById("admin-pin-input");
+            input.value = "";
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            setTimeout(() => input.focus(), 50);
+            lucide.createIcons();
+        }
+
+        function closeAdminLoginModal() {
+            const modal = document.getElementById("admin-login-modal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+
+        function verifyAdminLogin(event) {
+            event.preventDefault();
+            const enteredPin = document.getElementById("admin-pin-input").value.trim();
+            const expectedPin = String(storeSettings.adminPin || DEFAULT_SETTINGS.adminPin).trim();
+
+            if (enteredPin === expectedPin) {
+                isEditMode = true;
+                closeAdminLoginModal();
+                applyEditModeUI();
+                showToast("Modo Administrador activado. Ya puedes gestionar el catálogo.", "success");
+            } else {
+                showToast("PIN incorrecto. Solo el administrador puede editar.", "error");
+            }
+        }
+
+        // Verifica que haya sesión de administrador antes de ejecutar acciones sensibles
+        function ensureAdminAccess() {
+            if (!isEditMode) {
+                showToast("Acción restringida: inicia sesión como administrador.", "error");
+                openAdminLoginModal();
+                return false;
+            }
+            return true;
+        }
+
+        function openStoreSettingsModal() {
+            if (!ensureAdminAccess()) return;
+
+            let modal = document.getElementById("store-settings-modal");
+            if (!modal) {
+                modal = document.createElement("div");
+                modal.id = "store-settings-modal";
+                modal.className = "fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm";
+                modal.innerHTML = `
+                    <div class="bg-charcoal border border-zinc-700/80 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+                        <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-obsidian/50">
+                            <h3 class="font-serif text-xl font-bold text-amber-400">Configuración de Tienda y PIN</h3>
+                            <button type="button" onclick="closeStoreSettingsModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <form onsubmit="saveStoreSettings(event)" class="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1">Nombre de la Licorería</label>
+                                <input type="text" id="set-store-name" required class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1">Eslogan / Subtítulo</label>
+                                <input type="text" id="set-store-slogan" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-300 mb-1">Moneda</label>
+                                    <input type="text" id="set-currency" required class="w-full px-3 py-2 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-300 mb-1">Tope Económico</label>
+                                    <input type="number" id="set-budget-max" required min="0" step="1" class="w-full px-3 py-2 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-300 mb-1">Base Premium</label>
+                                    <input type="number" id="set-premium-min" required min="0" step="1" class="w-full px-3 py-2 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-300 mb-1">WhatsApp Corporativo (con código de país)</label>
+                                    <input type="text" id="set-whatsapp-number" placeholder="Ej. 59170000000" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-amber-300 mb-1">PIN de Administrador</label>
+                                    <input type="text" id="set-admin-pin" required minlength="4" placeholder="Ej. 1234" class="w-full px-3.5 py-2.5 bg-obsidian border border-zinc-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-300 mb-1">Nota de Pago / QR para WhatsApp</label>
+                                <textarea id="set-whatsapp-note" rows="2" class="w-full px-3.5 py-2 bg-obsidian border border-zinc-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
+                            </div>
+                            <div class="pt-2 flex items-center justify-end gap-3 border-t border-zinc-800">
+                                <button type="button" onclick="closeStoreSettingsModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-300 hover:bg-zinc-800">Cancelar</button>
+                                <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-amber-500 hover:bg-amber-400 text-obsidian">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            document.getElementById("set-store-name").value = storeSettings.storeName;
+            document.getElementById("set-store-slogan").value = storeSettings.storeSlogan;
+            document.getElementById("set-currency").value = storeSettings.currency;
+            document.getElementById("set-budget-max").value = storeSettings.budgetMax;
+            document.getElementById("set-premium-min").value = storeSettings.premiumMin;
+            document.getElementById("set-whatsapp-number").value = storeSettings.whatsappNumber || "";
+            document.getElementById("set-admin-pin").value = storeSettings.adminPin || DEFAULT_SETTINGS.adminPin;
+            document.getElementById("set-whatsapp-note").value = storeSettings.whatsappPaymentNote || "";
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            lucide.createIcons();
+        }
+
+        function closeStoreSettingsModal() {
+            const modal = document.getElementById("store-settings-modal");
+            if (modal) {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+        }
+
+        function saveStoreSettings(event) {
+            event.preventDefault();
+            if (!ensureAdminAccess()) return;
+
+            const newPin = document.getElementById("set-admin-pin").value.trim();
+            storeSettings.storeName = document.getElementById("set-store-name").value.trim() || DEFAULT_SETTINGS.storeName;
+            storeSettings.storeSlogan = document.getElementById("set-store-slogan").value.trim() || DEFAULT_SETTINGS.storeSlogan;
+            storeSettings.currency = document.getElementById("set-currency").value.trim() || DEFAULT_SETTINGS.currency;
+            storeSettings.budgetMax = parseFloat(document.getElementById("set-budget-max").value) || DEFAULT_SETTINGS.budgetMax;
+            storeSettings.premiumMin = parseFloat(document.getElementById("set-premium-min").value) || DEFAULT_SETTINGS.premiumMin;
+            storeSettings.whatsappNumber = sanitizePhoneNumber(document.getElementById("set-whatsapp-number").value);
+            storeSettings.adminPin = newPin.length >= 4 ? newPin : (storeSettings.adminPin || DEFAULT_SETTINGS.adminPin);
+            storeSettings.whatsappPaymentNote = document.getElementById("set-whatsapp-note").value.trim();
+
+            saveToLocalStorage();
+            applyStoreSettingsToUI();
+            renderProducts();
+            renderCart();
+            closeStoreSettingsModal();
+            showToast("Configuración de tienda y PIN guardados.", "success");
+        }
+
+        // =====================================================================
+        // FUNCIONES DE EDICIÓN Y GESTIÓN DE PRODUCTOS (SOLO ADMIN)
+        // =====================================================================
+
+        function openProductModal(productId = null) {
+            if (!ensureAdminAccess()) return;
+
+            const modal = document.getElementById("product-modal");
+            const title = document.getElementById("product-modal-title");
+            const form = document.getElementById("product-form");
+            form.reset();
+
+            let assignedTabs = [];
+            if (!productId && customTabs.some(t => t.id === activeTab)) {
+                assignedTabs = [activeTab];
+            }
+
+            if (productId) {
+                const prod = products.find(p => p.id === productId);
+                if (!prod) return;
+                title.textContent = "Editar Producto";
+                document.getElementById("prod-id").value = prod.id;
+                document.getElementById("prod-name").value = prod.name;
+                document.getElementById("prod-price").value = prod.price;
+                document.getElementById("prod-abv").value = prod.abv;
+                document.getElementById("prod-category").value = prod.category;
+                document.getElementById("prod-volume").value = prod.volume || "";
+                document.getElementById("prod-desc").value = prod.description || "";
+                document.getElementById("prod-img-url").value = prod.image || "";
+                document.getElementById("prod-img-preview").src = prod.image || FALLBACK_IMAGE;
+                assignedTabs = Array.isArray(prod.customTabs) ? prod.customTabs : [];
+            } else {
+                title.textContent = "Agregar Nuevo Producto";
+                document.getElementById("prod-id").value = "";
+                document.getElementById("prod-img-preview").src = FALLBACK_IMAGE;
+            }
+
+            renderProductCustomTabCheckboxes(assignedTabs);
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            lucide.createIcons();
+        }
+
+        function renderProductCustomTabCheckboxes(selectedIds = []) {
+            const container = document.getElementById("prod-custom-tabs-checkboxes");
+            if (!container) return;
+
+            if (customTabs.length === 0) {
+                container.innerHTML = `<span class="text-xs text-zinc-500">Aún no hay pestañas libres creadas.</span>`;
+                return;
+            }
+
+            container.innerHTML = customTabs.map(tab => {
+                const checked = selectedIds.includes(tab.id) ? "checked" : "";
+                return `
+                    <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-charcoal border border-zinc-700 text-xs text-zinc-200 cursor-pointer hover:border-amber-500/50">
+                        <input type="checkbox" name="prod-custom-tab" value="${tab.id}" ${checked} class="accent-amber-500 rounded">
+                        <span>${tab.name}</span>
+                    </label>
+                `;
+            }).join("");
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById("product-modal");
+            if (modal) {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+        }
+
+        function updateImagePreview(url) {
+            const preview = document.getElementById("prod-img-preview");
+            preview.src = url.trim() || FALLBACK_IMAGE;
+        }
+
+        function handleLocalImageUpload(event) {
+            if (!ensureAdminAccess()) return;
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                document.getElementById("prod-img-url").value = dataUrl;
+                document.getElementById("prod-img-preview").src = dataUrl;
+                showToast("Imagen cargada correctamente.", "success");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveProductForm(event) {
+            event.preventDefault();
+            if (!ensureAdminAccess()) return;
+
+            const id = document.getElementById("prod-id").value;
+            const name = document.getElementById("prod-name").value.trim();
+            const price = parseFloat(document.getElementById("prod-price").value);
+            const abv = parseFloat(document.getElementById("prod-abv").value);
+            const category = document.getElementById("prod-category").value;
+            const volume = document.getElementById("prod-volume").value.trim() || "750 ml";
+            const description = document.getElementById("prod-desc").value.trim();
+            const image = document.getElementById("prod-img-url").value.trim() || FALLBACK_IMAGE;
+            const selectedCustomTabs = Array.from(document.querySelectorAll('input[name="prod-custom-tab"]:checked')).map(cb => cb.value);
+
+            if (isNaN(price) || price < 0 || isNaN(abv) || abv < 0 || abv > 100) {
+                showToast("Revisa que el precio y el % de alcohol sean válidos.", "error");
+                return;
+            }
+
+            if (id) {
+                const index = products.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    products[index] = { ...products[index], name, price, abv, category, volume, description, image, customTabs: selectedCustomTabs };
+                    showToast(`"${name}" actualizado correctamente.`, "success");
+                }
+            } else {
+                const newProduct = {
+                    id: "prod-" + Date.now(),
+                    name,
+                    price,
+                    abv,
+                    category,
+                    volume,
+                    description,
+                    image,
+                    customTabs: selectedCustomTabs
+                };
+                products.unshift(newProduct);
+                showToast(`"${name}" agregado al catálogo.`, "success");
+            }
+
+            saveToLocalStorage();
+            renderProducts();
+            renderCart();
+            closeProductModal();
+        }
+
+        function confirmDeleteProduct(productId) {
+            if (!ensureAdminAccess()) return;
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
+
+            openConfirmModal(
+                "Eliminar Producto",
+                `¿Deseas eliminar "${prod.name}" del catálogo?`,
+                () => {
+                    if (!ensureAdminAccess()) return;
+                    products = products.filter(p => p.id !== productId);
+                    cart = cart.filter(item => item.id !== productId);
+                    saveToLocalStorage();
+                    renderProducts();
+                    renderCart();
+                    showToast("Producto eliminado.", "info");
+                }
+            );
+        }
+
+        // =====================================================================
+        // GESTIÓN DE PESTAÑAS PERSONALIZADAS SIN RESTRICCIONES (SOLO ADMIN)
+        // =====================================================================
+
+        function openCustomTabModal() {
+            if (!ensureAdminAccess()) return;
+            resetCustomTabForm();
+            renderCustomTabsManageList();
+            const modal = document.getElementById("custom-tab-modal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            lucide.createIcons();
+        }
+
+        function closeCustomTabModal() {
+            const modal = document.getElementById("custom-tab-modal");
+            if (modal) {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+        }
+
+        function resetCustomTabForm() {
+            document.getElementById("custom-tab-id").value = "";
+            document.getElementById("custom-tab-name").value = "";
+            document.getElementById("custom-tab-desc").value = "";
+            document.getElementById("save-custom-tab-btn").textContent = "Crear Pestaña";
+            document.getElementById("cancel-edit-tab-btn").classList.add("hidden");
+        }
+
+        function editCustomTab(tabId) {
+            if (!ensureAdminAccess()) return;
+            const tab = customTabs.find(t => t.id === tabId);
+            if (!tab) return;
+            document.getElementById("custom-tab-id").value = tab.id;
+            document.getElementById("custom-tab-name").value = tab.name;
+            document.getElementById("custom-tab-desc").value = tab.description || "";
+            document.getElementById("save-custom-tab-btn").textContent = "Actualizar Pestaña";
+            document.getElementById("cancel-edit-tab-btn").classList.remove("hidden");
+        }
+
+        function saveCustomTabForm(event) {
+            event.preventDefault();
+            if (!ensureAdminAccess()) return;
+
+            const id = document.getElementById("custom-tab-id").value;
+            const name = document.getElementById("custom-tab-name").value.trim();
+            const description = document.getElementById("custom-tab-desc").value.trim();
+            if (!name) return;
+
+            if (id) {
+                const idx = customTabs.findIndex(t => t.id === id);
+                if (idx !== -1) {
+                    customTabs[idx] = { ...customTabs[idx], name, description };
+                    showToast(`Pestaña "${name}" actualizada.`, "success");
+                }
+            } else {
+                const newTabId = "tab-libre-" + Date.now();
+                customTabs.push({ id: newTabId, name, description });
+                activeTab = newTabId;
+                showToast(`Pestaña libre "${name}" creada.`, "success");
+            }
+
+            saveToLocalStorage();
+            renderCustomTabsBar();
+            renderCustomTabsManageList();
+            renderProducts();
+            resetCustomTabForm();
+            applyEditModeUI();
+            lucide.createIcons();
+        }
+
+        function deleteCustomTab(tabId) {
+            if (!ensureAdminAccess()) return;
+            const tab = customTabs.find(t => t.id === tabId);
+            if (!tab) return;
+
+            customTabs = customTabs.filter(t => t.id !== tabId);
+            products = products.map(p => ({
+                ...p,
+                customTabs: Array.isArray(p.customTabs) ? p.customTabs.filter(id => id !== tabId) : []
+            }));
+
+            if (activeTab === tabId) activeTab = "all";
+
+            saveToLocalStorage();
+            renderCustomTabsBar();
+            renderCustomTabsManageList();
+            renderProducts();
+            applyEditModeUI();
+            showToast(`Pestaña "${tab.name}" eliminada.`, "info");
+            lucide.createIcons();
+        }
+
+        function renderCustomTabsManageList() {
+            const list = document.getElementById("custom-tabs-manage-list");
+            if (!list) return;
+
+            if (customTabs.length === 0) {
+                list.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">No has creado pestañas libres aún.</p>`;
+                return;
+            }
+
+            list.innerHTML = customTabs.map(tab => {
+                const count = products.filter(p => Array.isArray(p.customTabs) && p.customTabs.includes(tab.id)).length;
+                return `
+                    <div class="flex items-center justify-between gap-2 p-3 rounded-xl bg-obsidian border border-zinc-800">
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-zinc-100 truncate">${tab.name}</p>
+                            <p class="text-[11px] text-zinc-400">${count} producto(s) asignado(s)</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="editCustomTab('${tab.id}')" class="p-1.5 rounded-lg bg-zinc-800 hover:bg-amber-500/20 text-amber-400" title="Renombrar pestaña">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button type="button" onclick="deleteCustomTab('${tab.id}')" class="p-1.5 rounded-lg bg-zinc-800 hover:bg-red-500/20 text-red-400" title="Eliminar pestaña">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function exportCatalogJSON() {
+            if (!ensureAdminAccess()) return;
+            const currentPin = storeSettings.adminPin || DEFAULT_SETTINGS.adminPin;
+            const dataToExport = {
+                settings: { ...storeSettings, adminPin: currentPin },
+                products: products,
+                customTabs: customTabs,
+                exportedAt: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `catalogo_${storeSettings.storeName.toLowerCase().replace(/\s+/g, '_')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Catálogo exportado en archivo JSON.", "success");
+        }
+
+        function importCatalogJSON(event) {
+            if (!ensureAdminAccess()) {
+                event.target.value = "";
+                return;
+            }
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (Array.isArray(parsed.products)) {
+                        const existingPin = storeSettings.adminPin || DEFAULT_SETTINGS.adminPin;
+                        products = parsed.products;
+                        if (parsed.settings) {
+                            storeSettings = {
+                                ...DEFAULT_SETTINGS,
+                                ...parsed.settings,
+                                adminPin: parsed.settings.adminPin || existingPin
+                            };
+                        }
+                        if (Array.isArray(parsed.customTabs)) customTabs = parsed.customTabs;
+                        saveToLocalStorage();
+                        applyStoreSettingsToUI();
+                        renderCustomTabsBar();
+                        renderProducts();
+                        applyEditModeUI();
+                        showToast("Catálogo importado exitosamente.", "success");
+                    } else {
+                        showToast("El archivo JSON no tiene un formato válido.", "error");
+                    }
+                } catch (err) {
+                    showToast("Error al leer el archivo JSON.", "error");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = "";
+        }
+
+        function openResetConfirmModal() {
+            if (!ensureAdminAccess()) return;
+            openConfirmModal(
+                "Restaurar Catálogo Inicial",
+                "Se perderán los cambios personalizados y volverán los 16 productos de ejemplo originales. ¿Continuar?",
+                () => {
+                    if (!ensureAdminAccess()) return;
+                    const keepPin = storeSettings.adminPin || DEFAULT_SETTINGS.adminPin;
+                    storeSettings = { ...DEFAULT_SETTINGS, adminPin: keepPin };
+                    products = [...DEFAULT_PRODUCTS];
+                    customTabs = [...DEFAULT_CUSTOM_TABS];
+                    activeTab = "all";
+                    saveToLocalStorage();
+                    applyStoreSettingsToUI();
+                    renderCustomTabsBar();
+                    renderProducts();
+                    applyEditModeUI();
+                    showToast("Catálogo restaurado a los valores iniciales.", "info");
+                }
+            );
+        }
+
+        // Modal de Confirmación Reutilizable
+        let confirmCallback = null;
+        function openConfirmModal(title, message, onConfirm) {
+            document.getElementById("confirm-title").textContent = title;
+            document.getElementById("confirm-message").textContent = message;
+            confirmCallback = onConfirm;
+            const modal = document.getElementById("confirm-modal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById("confirm-modal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            confirmCallback = null;
+        }
+
+        document.getElementById("confirm-accept-btn").addEventListener("click", () => {
+            if (confirmCallback) confirmCallback();
+            closeConfirmModal();
+        });
+
+        // =====================================================================
+        // CARRITO / LISTA DE COTIZACIÓN RÁPIDA
+        // =====================================================================
+
+        function toggleCartDrawer() {
+            const drawer = document.getElementById("cart-drawer");
+            const overlay = document.getElementById("cart-overlay");
+            const isOpen = !drawer.classList.contains("translate-x-full");
+
+            if (isOpen) {
+                drawer.classList.add("translate-x-full");
+                overlay.classList.add("hidden");
+            } else {
+                drawer.classList.remove("translate-x-full");
+                overlay.classList.remove("hidden");
+            }
+        }
+
+        function addToCart(productId) {
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
+
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ id: productId, qty: 1 });
+            }
+
+            saveToLocalStorage();
+            renderCart();
+            showToast(`+1 ${prod.name} agregado al pedido.`, "success");
+        }
+
+        function updateCartQty(productId, delta) {
+            const index = cart.findIndex(item => item.id === productId);
+            if (index === -1) return;
+
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+
+            saveToLocalStorage();
+            renderCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            saveToLocalStorage();
+            renderCart();
+            showToast("Lista de pedido vaciada.", "info");
+        }
+
+        function renderCart() {
+            const container = document.getElementById("cart-items-container");
+            const badge = document.getElementById("cart-badge");
+            const totalDisplay = document.getElementById("cart-total-display");
+
+            const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+            badge.textContent = totalItems;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center py-12 text-zinc-500">
+                        <i data-lucide="shopping-bag" class="w-12 h-12 mb-3 opacity-30"></i>
+                        <p class="text-sm font-medium text-zinc-400">Tu lista está vacía</p>
+                        <p class="text-xs mt-1">Agrega botellas desde el catálogo para calcular el total y cancelar por WhatsApp.</p>
+                    </div>
+                `;
+                totalDisplay.textContent = `${storeSettings.currency} 0.00`;
+                lucide.createIcons();
+                return;
+            }
+
+            let totalAmount = 0;
+            container.innerHTML = cart.map(item => {
+                const prod = products.find(p => p.id === item.id);
+                if (!prod) return "";
+                const price = Number(prod.price) || 0;
+                const subtotal = price * item.qty;
+                totalAmount += subtotal;
+
+                return `
+                    <div class="flex items-center gap-3.5 bg-obsidian/90 p-3 rounded-xl border border-zinc-800">
+                        <img src="${prod.image || FALLBACK_IMAGE}" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';" class="w-14 h-14 rounded-lg object-cover shrink-0">
+                        <div class="flex-grow min-w-0">
+                            <h4 class="text-sm font-semibold text-zinc-100 truncate">${prod.name}</h4>
+                            <p class="text-xs text-zinc-400">${Number(prod.abv) || 0}% Alc. • ${storeSettings.currency} ${price.toFixed(2)} c/u</p>
+                            <p class="text-xs font-bold text-amber-400 mt-0.5">${storeSettings.currency} ${subtotal.toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-charcoal rounded-lg p-1 border border-zinc-700/70">
+                            <button onclick="updateCartQty('${prod.id}', -1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-zinc-700 text-zinc-300 text-sm font-bold">-</button>
+                            <span class="w-6 text-center text-xs font-bold text-white">${item.qty}</span>
+                            <button onclick="updateCartQty('${prod.id}', 1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-zinc-700 text-zinc-300 text-sm font-bold">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            totalDisplay.textContent = `${storeSettings.currency} ${totalAmount.toFixed(2)}`;
+            lucide.createIcons();
+        }
+
+        // Construir el mensaje estructurado del pedido para WhatsApp o portapapeles
+        function buildFormattedOrderMessage() {
+            let total = 0;
+            const customerName = (document.getElementById("checkout-customer-name")?.value || "").trim();
+            const customerAddress = (document.getElementById("checkout-customer-address")?.value || "").trim();
+
+            let lines = [
+                `🍷 *NUEVO PEDIDO — ${storeSettings.storeName.toUpperCase()}*`,
+                `━━━━━━━━━━━━━━━━━━━━`
+            ];
+
+            if (customerName) lines.push(`👤 *Cliente:* ${customerName}`);
+            if (customerAddress) lines.push(`📍 *Entrega:* ${customerAddress}`);
+            if (customerName || customerAddress) lines.push(`━━━━━━━━━━━━━━━━━━━━`);
+
+            lines.push(`*Detalle de botellas:*`);
+
+            cart.forEach(item => {
+                const prod = products.find(p => p.id === item.id);
+                if (prod) {
+                    const price = Number(prod.price) || 0;
+                    const sub = price * item.qty;
+                    total += sub;
+                    const volText = prod.volume ? ` | ${prod.volume}` : "";
+                    lines.push(`• *${item.qty}x* ${prod.name} (${Number(prod.abv) || 0}% Alc.${volText}) — *${storeSettings.currency} ${sub.toFixed(2)}*`);
+                }
+            });
+
+            lines.push(`━━━━━━━━━━━━━━━━━━━━`);
+            lines.push(`💰 *TOTAL A CANCELAR: ${storeSettings.currency} ${total.toFixed(2)}*`);
+            lines.push(``);
+
+            if (storeSettings.whatsappPaymentNote) {
+                lines.push(`💳 _${storeSettings.whatsappPaymentNote}_`);
+            } else {
+                lines.push(`💳 _Quedo atento a los datos de pago (QR / transferencia) y coordinación de entrega._`);
+            }
+
+            return lines.join("\n");
+        }
+
+        // Enviar pedido directamente al WhatsApp corporativo (https://wa.me/...)
+        function checkoutViaWhatsApp() {
+            if (cart.length === 0) {
+                showToast("Agrega al menos un trago al carrito para enviar tu pedido.", "info");
+                return;
+            }
+
+            const phone = sanitizePhoneNumber(storeSettings.whatsappNumber);
+            if (!phone || phone.length < 8) {
+                showToast("Configura primero el número de WhatsApp corporativo en Modo Administrador.", "error");
+                return;
+            }
+
+            const message = buildFormattedOrderMessage();
+            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+            window.open(waUrl, "_blank", "noopener,noreferrer");
+            showToast("Abriendo WhatsApp corporativo con tu pedido...", "success");
+        }
+
+        // Acceso rápido al WhatsApp corporativo para consultas generales
+        function openDirectWhatsApp() {
+            const phone = sanitizePhoneNumber(storeSettings.whatsappNumber);
+            if (!phone || phone.length < 8) {
+                showToast("Configura el número de WhatsApp corporativo en Modo Administrador.", "error");
+                return;
+            }
+
+            const greeting = `Hola *${storeSettings.storeName}*, vengo desde su catálogo digital y quisiera hacer una consulta.`;
+            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(greeting)}`;
+            window.open(waUrl, "_blank", "noopener,noreferrer");
+        }
+
+        // Copiar pedido formateado al portapapeles (Compatible con iFrame usando execCommand)
+        function copyOrderToClipboard() {
+            if (cart.length === 0) {
+                showToast("Agrega al menos un producto antes de copiar.", "info");
+                return;
+            }
+
+            const textToCopy = buildFormattedOrderMessage();
+            const textarea = document.createElement("textarea");
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand("copy");
+                showToast("¡Pedido copiado! Listo para pegar en WhatsApp.", "success");
+            } catch (err) {
+                showToast("No se pudo copiar el texto.", "error");
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // =====================================================================
+        // CHATBOT SOMMELIER (SALUDO INICIAL + TRAGO MÁS FUERTE + GUÍA)
+        // =====================================================================
+
+        function initChatbotGreeting() {
+            if (chatbotInitialized) return;
+            chatbotInitialized = true;
+
+            const strongest = getStrongestDrinksInfo();
+            const greetingText =
+                `¡Hola! Bienvenido a <strong>${storeSettings.storeName}</strong> 🍷<br><br>` +
+                `Soy tu asistente de tragos. Si no conoces mucho de bebidas, dime qué buscas o qué sabor te gusta.<br><br>` +
+                (strongest.drinks.length > 0
+                    ? `Dato rápido: el trago más fuerte de la carta actual es <strong>${strongest.drinks.map(d => `${d.name} (${Number(d.abv) || 0}% Alc.)`).join(" y ")}</strong>.`
+                    : `Puedes consultarme por graduación, sabores o precios.`);
+
+            appendBotMessage(greetingText, strongest.drinks.slice(0, 1));
+            const unreadDot = document.getElementById("chatbot-unread-dot");
+            if (unreadDot) unreadDot.classList.remove("hidden");
+        }
+
+        function toggleChatbot() {
+            const win = document.getElementById("chatbot-window");
+            const unreadDot = document.getElementById("chatbot-unread-dot");
+            const isHidden = win.classList.contains("hidden");
+
+            if (isHidden) {
+                win.classList.remove("hidden");
+                win.classList.add("flex");
+                if (unreadDot) unreadDot.classList.add("hidden");
+                setTimeout(() => {
+                    document.getElementById("chatbot-input")?.focus();
+                    scrollChatbotToBottom();
+                }, 50);
+            } else {
+                win.classList.add("hidden");
+                win.classList.remove("flex");
+            }
+            lucide.createIcons();
+        }
+
+        function scrollChatbotToBottom() {
+            const box = document.getElementById("chatbot-messages");
+            if (box) box.scrollTop = box.scrollHeight;
+        }
+
+        function appendBotMessage(htmlText, suggestedProducts = []) {
+            const box = document.getElementById("chatbot-messages");
+            if (!box) return;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "flex flex-col items-start gap-2";
+
+            const bubble = document.createElement("div");
+            bubble.className = "max-w-[90%] px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-obsidian border border-zinc-800 text-zinc-200 leading-relaxed";
+            bubble.innerHTML = htmlText;
+            wrapper.appendChild(bubble);
+
+            if (suggestedProducts.length > 0) {
+                const cardsRow = document.createElement("div");
+                cardsRow.className = "w-full space-y-1.5";
+                cardsRow.innerHTML = suggestedProducts.map(prod => `
+                    <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-cardbg border border-amber-500/25">
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-amber-300 truncate">${prod.name}</p>
+                            <p class="text-[11px] text-zinc-400">${Number(prod.abv) || 0}% Alc. • ${storeSettings.currency} ${(Number(prod.price) || 0).toFixed(2)}</p>
+                        </div>
+                        <button type="button" onclick="addToCart('${prod.id}')" class="shrink-0 px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-obsidian font-semibold text-[11px] transition-colors">
+                            + Pedir
+                        </button>
+                    </div>
+                `).join("");
+                wrapper.appendChild(cardsRow);
+            }
+
+            box.appendChild(wrapper);
+            scrollChatbotToBottom();
+        }
+
+        function appendUserMessage(text) {
+            const box = document.getElementById("chatbot-messages");
+            if (!box) return;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "flex flex-col items-end";
+
+            const bubble = document.createElement("div");
+            bubble.className = "max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-tr-sm bg-amber-500 text-obsidian font-medium leading-relaxed";
+            bubble.textContent = text;
+
+            wrapper.appendChild(bubble);
+            box.appendChild(wrapper);
+            scrollChatbotToBottom();
+        }
+
+        function getStrongestDrinksInfo() {
+            const alcoholic = products.filter(p => (Number(p.abv) || 0) > 0);
+            if (alcoholic.length === 0) {
+                return { maxAbv: 0, drinks: [] };
+            }
+            const maxAbv = Math.max(...alcoholic.map(p => Number(p.abv) || 0));
+            const drinks = alcoholic.filter(p => (Number(p.abv) || 0) === maxAbv);
+            return { maxAbv, drinks };
+        }
+
+        function generateBotReply(rawText) {
+            const q = rawText.toLowerCase().trim();
+
+            // 1. Preguntas por el trago más fuerte / mayor graduación
+            if (
+                q.includes("fuerte") ||
+                q.includes("mas alcohol") ||
+                q.includes("más alcohol") ||
+                q.includes("graduacion") ||
+                q.includes("graduación") ||
+                q.includes("pega mas") ||
+                q.includes("pega más") ||
+                q.includes("potente") ||
+                q.includes("alto porcentaje")
+            ) {
+                const info = getStrongestDrinksInfo();
+                if (info.drinks.length === 0) {
+                    return {
+                        html: "Actualmente no hay bebidas alcohólicas registradas en el catálogo (solo opciones de 0%).",
+                        items: []
+                    };
+                }
+
+                const namesList = info.drinks
+                    .map(d => `<strong>${d.name}</strong> (${d.category}, <strong>${Number(d.abv) || 0}% Alc.</strong> — ${storeSettings.currency} ${(Number(d.price) || 0).toFixed(2)})`)
+                    .join(" y ");
+
+                const topHigh = [...products]
+                    .filter(p => (Number(p.abv) || 0) >= 35)
+                    .sort((a, b) => (Number(b.abv) || 0) - (Number(a.abv) || 0))
+                    .slice(0, 3);
+
+                return {
+                    html: `El trago más fuerte de nuestro catálogo es ${namesList}.<br><br>` +
+                          `<em>Consejo:</em> los destilados de alta graduación (&gt;35%) tienen mayor intensidad alcohólica; si no estás acostumbrado, puedes mezclarlos con soda, tónica o hielo.`,
+                    items: topHigh
+                };
+            }
+
+            // 2. Clientes que no conocen de tragos / piden guía
+            if (
+                q.includes("no conozco") ||
+                q.includes("no se de trago") ||
+                q.includes("no sé de trago") ||
+                q.includes("ayudame") ||
+                q.includes("ayúdame") ||
+                q.includes("recomienda") ||
+                q.includes("principiante") ||
+                q.includes("empezar")
+            ) {
+                const zeroDrink = products.find(p => (Number(p.abv) || 0) === 0);
+                const mildDrink = products.find(p => (Number(p.abv) || 0) > 0 && (Number(p.abv) || 0) < 15);
+                const strongInfo = getStrongestDrinksInfo();
+                const strongestDrink = strongInfo.drinks[0];
+
+                const picks = [zeroDrink, mildDrink, strongestDrink].filter(Boolean);
+                return {
+                    html: `¡Sin problema! Aquí tienes una guía rápida según lo que busques:<br>` +
+                          `• <strong>Sin alcohol (0%):</strong> sodas o jugos, ideales para refrescarte.<br>` +
+                          `• <strong>Suave (&lt;15%):</strong> vinos, espumantes o cervezas, fáciles de tomar.<br>` +
+                          `• <strong>Medio (15%–35%):</strong> licores o cremas con notas dulces/herbales.<br>` +
+                          `• <strong>Más fuerte:</strong> ${strongestDrink ? `<strong>${strongestDrink.name}</strong> (${Number(strongestDrink.abv) || 0}% Alc.)` : "destilados de alta graduación"}.`,
+                    items: picks
+                };
+            }
+
+            // 3. Sin alcohol o suaves
+            if (q.includes("sin alcohol") || q.includes("0%") || q.includes("soda") || q.includes("jugo") || q.includes("suave") || q.includes("tranquilo")) {
+                const gentle = products
+                    .filter(p => (Number(p.abv) || 0) < 15)
+                    .sort((a, b) => (Number(a.abv) || 0) - (Number(b.abv) || 0))
+                    .slice(0, 3);
+                return {
+                    html: `Estas son opciones suaves o sin alcohol (menos del 15% de graduación), ideales si prefieres algo ligero:`,
+                    items: gentle
+                };
+            }
+
+            // 4. Económicos / baratos
+            if (q.includes("economico") || q.includes("económico") || q.includes("barato") || q.includes("precio")) {
+                const cheap = [...products]
+                    .sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0))
+                    .slice(0, 3);
+                return {
+                    html: `Aquí tienes opciones con precios accesibles en el catálogo:`,
+                    items: cheap
+                };
+            }
+
+            // 5. Saludos
+            if (q.includes("hola") || q.includes("buenas") || q.includes("hey")) {
+                const info = getStrongestDrinksInfo();
+                const strongestLabel = info.drinks.length > 0
+                    ? ` El trago más fuerte actual es <strong>${info.drinks[0].name}</strong> (${Number(info.drinks[0].abv) || 0}% Alc.).`
+                    : "";
+                return {
+                    html: `¡Hola! ¿En qué te ayudo hoy? Puedo decirte cuál es el trago más fuerte o recomendarte algo si no conoces mucho de bebidas.${strongestLabel}`,
+                    items: []
+                };
+            }
+
+            // 6. Respuesta por defecto con recordatorio de opciones
+            const info = getStrongestDrinksInfo();
+            return {
+                html: `Puedo ayudarte a elegir tragos. Pregúntame por ejemplo:<br>` +
+                      `• <em>"¿Cuál es el trago más fuerte?"</em>` +
+                      (info.drinks.length > 0 ? ` (ahora mismo es <strong>${info.drinks[0].name}</strong> con ${Number(info.drinks[0].abv) || 0}% Alc.)` : ``) + `<br>` +
+                      `• <em>"No conozco de tragos"</em> para guiarte paso a paso.`,
+                items: info.drinks.slice(0, 1)
+            };
+        }
+
+        function sendBotPrompt(text) {
+            const win = document.getElementById("chatbot-window");
+            if (win && win.classList.contains("hidden")) {
+                win.classList.remove("hidden");
+                win.classList.add("flex");
+            }
+            appendUserMessage(text);
+            const reply = generateBotReply(text);
+            setTimeout(() => {
+                appendBotMessage(reply.html, reply.items);
+                lucide.createIcons();
+            }, 180);
+        }
+
+        function handleChatbotSubmit(event) {
+            event.preventDefault();
+            const input = document.getElementById("chatbot-input");
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = "";
+            sendBotPrompt(text);
+        }
+
+        // Sistema de Notificaciones Toast
+        function showToast(message, type = "info") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+
+            const colors = {
+                success: "bg-emerald-950/95 border-emerald-500/50 text-emerald-200",
+                error: "bg-red-950/95 border-red-500/50 text-red-200",
+                info: "bg-charcoal/95 border-amber-500/50 text-amber-200"
+            };
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md text-xs font-medium flex items-center gap-2.5 transform transition-all duration-300 translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+            toast.innerHTML = `<span>${message}</span>`;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            });
+
+            setTimeout(() => {
+                toast.classList.add("opacity-0", "translate-y-2");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
